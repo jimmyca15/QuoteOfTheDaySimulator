@@ -119,5 +119,4 @@ foreach (Metric metric in metrics)
         }));
 }
 
-
 Console.WriteLine("Shutting down.");
