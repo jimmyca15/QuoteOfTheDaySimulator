@@ -2,7 +2,14 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-Console.WriteLine("Running 'Quote of the Day' traffic simulator.");
+Console.WriteLine("What port is your 'Quote of the Day' application running on?");
+
+string portInput = Console.ReadLine();
+
+if (!int.TryParse(portInput, out int port))
+{
+    throw new ArgumentException("The provided port should be a number. Example: 7206.");
+}
 
 using var cts = new CancellationTokenSource();
 
@@ -40,7 +47,7 @@ for (int i = 0; i < userCount; i++)
     };
 }
 
-var client = new QuoteOfTheDayClient();
+var client = new QuoteOfTheDayClient(port);
 
 var random = new Random();
 

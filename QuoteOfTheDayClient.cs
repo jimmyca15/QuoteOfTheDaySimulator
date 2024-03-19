@@ -6,9 +6,19 @@ namespace QuoteOfTheDaySimulator
     class QuoteOfTheDayClient : IDisposable
     {
         private readonly HttpClient _client;
+        private readonly int _port;
 
-        public QuoteOfTheDayClient()
+        public QuoteOfTheDayClient(int port)
         {
+            if (port <= 0)
+            {
+                throw new ArgumentException(
+                    "Port should be a valid port number.",
+                    nameof(port));
+            }
+
+            _port = port;
+
             _client = new HttpClient(
                 new HttpClientHandler
                 {
@@ -19,7 +29,7 @@ namespace QuoteOfTheDaySimulator
 
         public async Task RegisterUser(string username, string password, CancellationToken cancellationToken)
         {
-            using HttpResponseMessage registerPageResponse = await _client.GetAsync("https://localhost:7206/Identity/Account/Register", cancellationToken);
+            using HttpResponseMessage registerPageResponse = await _client.GetAsync($"https://localhost:{_port}/Identity/Account/Register", cancellationToken);
 
             string content = await registerPageResponse.Content.ReadAsStringAsync();
 
@@ -34,12 +44,12 @@ namespace QuoteOfTheDaySimulator
             };
 
             HttpResponseMessage registerResponse = await _client.PostAsync(
-                "https://localhost:7206/Identity/Account/Register",
+                $"https://localhost:{_port}/Identity/Account/Register",
                 new FormUrlEncodedContent(registerParameters),
                 cancellationToken);
 
             HttpResponseMessage activateRegistrationResponse = await _client.GetAsync(
-                $"https://localhost:7206/Identity/Account/RegisterConfirmation?email={username}&returnUrl=/",
+                $"https://localhost:{_port}/Identity/Account/RegisterConfirmation?email={username}&returnUrl=/",
                 cancellationToken);
 
             string activationLink = GetHtmlElementAttributeValue(
@@ -52,7 +62,7 @@ namespace QuoteOfTheDaySimulator
 
         public async Task Login(string username, string password, CancellationToken cancellationToken)
         {
-            using HttpResponseMessage loginPageResponse = await _client.GetAsync("https://localhost:7206/Identity/Account/Register", cancellationToken);
+            using HttpResponseMessage loginPageResponse = await _client.GetAsync($"https://localhost:{_port}/Identity/Account/Register", cancellationToken);
 
             string content = await loginPageResponse.Content.ReadAsStringAsync(cancellationToken);
 
@@ -67,14 +77,14 @@ namespace QuoteOfTheDaySimulator
             };
 
             HttpResponseMessage loginResponse = await _client.PostAsync(
-                "https://localhost:7206/Identity/Account/Login",
+                $"https://localhost:{_port}/Identity/Account/Login",
                 new FormUrlEncodedContent(registerParameters),
                 cancellationToken);
         }
 
         public async Task<Variant> GetVariant(CancellationToken cancellationToken)
         {
-            using HttpResponseMessage mainPage = await _client.GetAsync("https://localhost:7206/", cancellationToken);
+            using HttpResponseMessage mainPage = await _client.GetAsync($"https://localhost:{_port}/", cancellationToken);
 
             string content = await mainPage.Content.ReadAsStringAsync(cancellationToken);
 
@@ -85,7 +95,7 @@ namespace QuoteOfTheDaySimulator
 
         public async Task LikeQuote(CancellationToken cancellationToken)
         {
-            using HttpResponseMessage mainPage = await _client.GetAsync("https://localhost:7206/", cancellationToken);
+            using HttpResponseMessage mainPage = await _client.GetAsync($"https://localhost:{_port}/", cancellationToken);
 
             string content = await mainPage.Content.ReadAsStringAsync(cancellationToken);
 
@@ -93,7 +103,7 @@ namespace QuoteOfTheDaySimulator
 
             using var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "https://localhost:7206/Index?handler=HeartQuote&username=userb@contoso.com");
+                $"https://localhost:{_port}/Index?handler=HeartQuote&username=userb@contoso.com");
 
             request.Headers.TryAddWithoutValidation("RequestVerificationToken", requestVerificationToken);
 
@@ -102,7 +112,7 @@ namespace QuoteOfTheDaySimulator
 
         public async Task Logout(CancellationToken cancellationToken)
         {
-            using HttpResponseMessage mainPage = await _client.GetAsync("https://localhost:7206/", cancellationToken);
+            using HttpResponseMessage mainPage = await _client.GetAsync($"https://localhost:{_port}/", cancellationToken);
 
             string content = await mainPage.Content.ReadAsStringAsync(cancellationToken);
 
@@ -114,7 +124,7 @@ namespace QuoteOfTheDaySimulator
             };
 
             HttpResponseMessage loginResponse = await _client.PostAsync(
-                "https://localhost:7206/Identity/Account/Logout?returnUrl=/",
+                $"https://localhost:{_port}/Identity/Account/Logout?returnUrl=/",
                 new FormUrlEncodedContent(registerParameters),
                 cancellationToken);
         }
